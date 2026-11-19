@@ -1,0 +1,87 @@
+name: Build MohamadAi APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Arrange Android project
+        run: |
+          mkdir -p app/src/main/java/com/mohamadalqaaq/mohamadai app/src/main/res/mipmap-xxxhdpi app/src/main/assets
+          cp AndroidManifest.xml app/src/main/AndroidManifest.xml
+          cp MainActivity.java app/src/main/java/com/mohamadalqaaq/mohamadai/MainActivity.java
+          cp ic_launcher.png app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          cp index.html app/src/main/assets/index.html
+          cat << 'EOF' > settings.gradle
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "MohamadAi"
+          include(":app")
+          EOF
+          cat << 'EOF' > build.gradle
+          plugins {
+              id 'com.android.application' version '8.4.2' apply false
+          }
+          EOF
+          cat << 'EOF' > gradle.properties
+          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+          android.useAndroidX=true
+          android.nonTransitiveRClass=true
+          EOF
+          cat << 'EOF' > app/build.gradle
+          plugins {
+              id 'com.android.application'
+          }
+          android {
+              namespace 'com.mohamadalqaaq.mohamadai'
+              compileSdk 34
+              defaultConfig {
+                  applicationId "com.mohamadalqaaq.mohamadai"
+                  minSdk 24
+                  targetSdk 34
+                  versionCode 1
+                  versionName "1.0"
+              }
+              buildTypes {
+                  release {
+                      minifyEnabled false
+                  }
+              }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+          }
+          EOF
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+      - name: Build Debug APK
+        run: gradle assembleDebug --no-daemon
+      - name: Rename APK
+        run: cp app/build/outputs/apk/debug/app-debug.apk MohamadAi.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MohamadAi-APK
+          path: MohamadAi.apk
