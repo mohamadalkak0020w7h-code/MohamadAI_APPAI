@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="MohamadAi" />
+  <title>MohamadAi — مساعد الذكاء الاصطناعي (سؤال وجواب)</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Cairo', 'Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; padding: 0; }
+    body { font-family: 'Cairo', 'Inter', system-ui, sans-serif; }
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.35); border-radius: 9999px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.55); }
+    @keyframes pulseDot {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+    .dot-1 { animation: pulseDot 1.2s infinite ease-in-out 0s; }
+    .dot-2 { animation: pulseDot 1.2s infinite ease-in-out 0.2s; }
+    .dot-3 { animation: pulseDot 1.2s infinite ease-in-out 0.4s; }
+    .prose-msg p { margin-bottom: 0.5rem; }
+    .prose-msg p:last-child { margin-bottom: 0; }
+    .prose-msg ul, .prose-msg ol { margin: 0.4rem 0 0.6rem; padding-inline-start: 1.25rem; }
+    .prose-msg ul { list-style-type: disc; }
+    .prose-msg ol { list-style-type: decimal; }
+    .prose-msg code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.85em;
+      padding: 0.12rem 0.35rem;
+      border-radius: 0.35rem;
+      background: rgba(100, 116, 139, 0.2);
+    }
+    .prose-msg pre {
+      direction: ltr;
+      text-align: left;
+      overflow-x: auto;
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      background: #0b1120;
+      color: #e2e8f0;
+      margin: 0.5rem 0;
+      font-size: 0.85rem;
+    }
+    .prose-msg pre code { background: transparent; padding: 0; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 flex flex-col h-full overflow-hidden transition-colors duration-200">
+
+  <!-- Header -->
+  <header class="shrink-0 border-b border-slate-200 dark:border-slate-800/80 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md z-20">
+    <div class="max-w-4xl mx-auto px-3 sm:px-5 h-14 sm:h-16 flex items-center justify-between gap-2">
+      <!-- Brand -->
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 flex items-center justify-center shadow-md shadow-emerald-500/20 shrink-0">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V18a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.26C6.19 14.47 5 12.38 5 10a7 7 0 0 1 7-7z"/>
+            <path d="M9 21h6"/>
+            <circle cx="10" cy="10" r="1" fill="currentColor"/>
+            <circle cx="14" cy="10" r="1" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <h1 class="font-extrabold text-base sm:text-lg tracking-tight truncate">MohamadAi</h1>
+            <span id="modeBadge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 shrink-0">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span id="modeBadgeText">سؤال وجواب</span>
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">إجابات فورية فقط — بدون تنفيذ مهام</p>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <button id="installBtn" type="button" title="تثبيت التطبيق" class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition cursor-pointer">
+          <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span class="hidden sm:inline">تثبيت</span>
+        </button>
+
+        <button id="newChatBtn" type="button" title="محادثة جديدة" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+        </button>
+
+        <button id="themeBtn" type="button" title="تبديل المظهر" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer">
+          <svg id="sunIcon" class="w-4 h-4 sm:w-5 sm:h-5 hidden dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+          </svg>
+          <svg id="moonIcon" class="w-4 h-4 sm:w-5 sm:h-5 block dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+
+        <button id="settingsBtn" type="button" title="الإعدادات" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Chat Area -->
+  <main id="chatScroll" class="flex-1 overflow-y-auto custom-scroll px-3 sm:px-5 py-4 sm:py-6">
+    <div class="max-w-3xl mx-auto flex flex-col gap-4">
+
+      <!-- Welcome Screen -->
+      <section id="welcomeState" class="py-6 sm:py-10 text-center flex flex-col items-center gap-5">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-emerald-500/25">
+          <svg class="w-9 h-9 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V18a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.26C6.19 14.47 5 12.38 5 10a7 7 0 0 1 7-7z"/>
+            <path d="M9 21h6"/>
+          </svg>
+        </div>
+        <div class="space-y-2 max-w-lg">
+          <h2 class="text-2xl sm:text-3xl font-extrabold">أهلاً بك في MohamadAi</h2>
+          <p class="text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400">تطوير المهندس محمد سليم القاق</p>
+          <p class="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
+            اسألني عن أي شيء وسأجيبك مباشرة. أنا مصمم للإجابة عن الأسئلة فقط (سؤال وجواب) دون تنفيذ أي مهام أو تعديل ملفات.
+          </p>
+        </div>
+
+        <!-- Quick Starter Chips -->
+        <div id="starterGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-xl text-right mt-2">
+          <button type="button" data-prompt="ما هو الذكاء الاصطناعي وكيف يعمل؟" class="starter-btn p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/70 hover:border-emerald-500/60 hover:bg-emerald-50/40 dark:hover:bg-slate-800/80 transition text-sm font-medium text-slate-700 dark:text-slate-200 cursor-pointer flex items-center justify-between gap-2">
+            <span>ما هو الذكاء الاصطناعي وكيف يعمل؟</span>
+            <span class="text-emerald-500 text-xs shrink-0">←</span>
+          </button>
+          <button type="button" data-prompt="احسب لي 25% من 4800 مع الشرح" class="starter-btn p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/70 hover:border-emerald-500/60 hover:bg-emerald-50/40 dark:hover:bg-slate-800/80 transition text-sm font-medium text-slate-700 dark:text-slate-200 cursor-pointer flex items-center justify-between gap-2">
+            <span>احسب لي 25% من 4800 مع الشرح</span>
+            <span class="text-emerald-500 text-xs shrink-0">←</span>
+          </button>
+          <button type="button" data-prompt="ما الفرق بين البرمجة ببايثون وجافاسكريبت؟" class="starter-btn p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/70 hover:border-emerald-500/60 hover:bg-emerald-50/40 dark:hover:bg-slate-800/80 transition text-sm font-medium text-slate-700 dark:text-slate-200 cursor-pointer flex items-center justify-between gap-2">
+            <span>ما الفرق بين بايثون وجافاسكريبت؟</span>
+            <span class="text-emerald-500 text-xs shrink-0">←</span>
+          </button>
+          <button type="button" data-prompt="أعطني 5 نصائح سريعة لتحسين التركيز أثناء الدراسة" class="starter-btn p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/70 hover:border-emerald-500/60 hover:bg-emerald-50/40 dark:hover:bg-slate-800/80 transition text-sm font-medium text-slate-700 dark:text-slate-200 cursor-pointer flex items-center justify-between gap-2">
+            <span>5 نصائح سريعة لتحسين التركيز</span>
+            <span class="text-emerald-500 text-xs shrink-0">←</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Messages Container -->
+      <div id="messagesList" class="flex flex-col gap-4"></div>
+
+    </div>
+  </main>
+
+  <!-- Input Area -->
+  <footer class="shrink-0 border-t border-slate-200 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-3 sm:px-5 py-3">
+    <div class="max-w-3xl mx-auto">
+      <form id="chatForm" class="flex items-end gap-2 bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-2 focus-within:ring-2 focus-within:ring-emerald-500/50 transition">
+        <textarea id="questionInput" rows="1" placeholder="اكتب سؤالك هنا... (سؤال وجواب فقط)" class="flex-1 bg-transparent resize-none border-0 outline-none text-sm sm:text-base px-2 py-1.5 max-h-36 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"></textarea>
+        <button id="sendBtn" type="submit" title="إرسال السؤال" class="w-10 h-10 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:hover:bg-emerald-600 text-white flex items-center justify-center shrink-0 transition cursor-pointer">
+          <svg class="w-5 h-5 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </form>
+      <div class="flex items-center justify-between mt-1.5 px-1 text-[11px] text-slate-500 dark:text-slate-400">
+        <span id="statusFooter">يعمل مباشرة بدون مفاتيح — وضع سؤال وجواب فقط</span>
+        <span>تطوير المهندس محمد سليم القاق</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold">إعدادات MohamadAi</h3>
+        <button id="closeSettingsBtn" type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-sm text-slate-600 dark:text-slate-300">
+        <p class="leading-relaxed">
+          تطبيق <strong>MohamadAi</strong> يعمل مباشرة دون الحاجة إلى أي مفاتيح API، ومخصص للإجابة عن الأسئلة فقط.
+        </p>
+        <p class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+          تطوير المهندس محمد سليم القاق
+        </p>
+      </div>
+
+      <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+        <button id="clearHistoryBtn" type="button" class="px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer">
+          مسح سجل المحادثة
+        </button>
+        <button id="saveSettingsBtn" type="button" class="px-4 py-2 rounded-xl text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition cursor-pointer">
+          تم
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Install Modal -->
+  <div id="installModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold">تثبيت تطبيق MohamadAi</h3>
+        <button id="closeInstallBtn" type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+        تطبيق <strong>MohamadAi</strong> جاهز للتثبيت والعمل كتطبيق مستقل على الهاتف أو الكمبيوتر:
+      </p>
+
+      <div class="space-y-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/70 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/70">
+        <div><strong>1. التثبيت المباشر (PWA):</strong> إذا ظهر زر التثبيت في المتصفح يمكنك تثبيته مباشرة على الشاشة الرئيسية.</div>
+        <div><strong>2. على أندرويد / آيفون:</strong> افتح قائمة المتصفح واختر <em>"إضافة إلى الشاشة الرئيسية"</em> (Add to Home Screen).</div>
+        <div><strong>3. حفظ نسخة مستقلة:</strong> يمكنك تنزيل ملف التطبيق وتشغيله في أي وقت دون إنترنت للوضع المدمج.</div>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-end gap-2 pt-1">
+        <button id="triggerPwaBtn" type="button" class="hidden px-4 py-2 rounded-xl text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition cursor-pointer">
+          تثبيت الآن
+        </button>
+        <button id="downloadAppBtn" type="button" class="px-4 py-2 rounded-xl text-sm font-semibold bg-slate-900 dark:bg-emerald-600 hover:opacity-90 text-white transition cursor-pointer">
+          تنزيل ملف التطبيق (HTML)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold shadow-lg opacity-0 pointer-events-none transition-opacity duration-200"></div>
+
+  <script>
+    (function () {
+      const STORAGE_KEY_MSGS = 'mohamadai_messages_v1';
+      const STORAGE_KEY_CFG = 'mohamadai_config_v1';
+      const SYSTEM_QA_PROMPT =
+        'أنت MohamadAi، مساعد ذكاء اصطناعي مخصص للإجابة عن الأسئلة فقط (سؤال وجواب). أجب بوضوح ودقة وباختصار مفيد باللغة التي يسأل بها المستخدم. لا تنفّذ مهام خارجية ولا تدّعي أنك نفذت أي إجراء عملي؛ إذا طلب المستخدم تنفيذ مهمة، وضّح بلطف أنك مخصص للإجابة عن الأسئلة فقط وقدّم له الإرشاد أو المعلومة.';
+
+      function safeGet(key, fallback) {
+        try {
+          const val = localStorage.getItem(key);
+          return val ? JSON.parse(val) : fallback;
+        } catch (e) {
+          return fallback;
+        }
+      }
+      function safeSet(key, val) {
+        try {
+          localStorage.setItem(key, JSON.stringify(val));
+        } catch (e) {}
+      }
+
+      // Dynamic PWA Manifest registration
+      (function registerManifest() {
+        try {
+          const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="40" fill="#059669"/><path d="M96 36a48 48 0 0 1 48 48c0 16.3-8.1 30.7-20.6 39.4V138a14 14 0 0 1-14 14H82.6a14 14 0 0 1-14-14v-14.6C56.1 114.7 48 100.3 48 84a48 48 0 0 1 48-48z" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><line x1="76" y1="164" x2="116" y2="164" stroke="#fff" stroke-width="12" stroke-linecap="round"/></svg>`;
+          const iconUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgIcon)));
+          const manifest = {
+            name: 'MohamadAi',
+            short_name: 'MohamadAi',
+            description: 'تطبيق ذكاء اصطناعي للأسئلة والأجوبة فقط',
+            start_url: '.',
+            display: 'standalone',
+            background_color: '#020617',
+            theme_color: '#059669',
+            icons: [{ src: iconUrl, sizes: '192x192', type: 'image/svg+xml' }],
+          };
+          const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+          const link = document.createElement('link');
+          link.rel = 'manifest';
+          link.href = URL.createObjectURL(blob);
+          document.head.appendChild(link);
+        } catch (e) {}
+      })();
+
+      let messages = safeGet(STORAGE_KEY_MSGS, []);
+      let config = safeGet(STORAGE_KEY_CFG, {
+        theme: 'dark',
+      });
+      let isGenerating = false;
+      let deferredInstallPrompt = null;
+
+      const htmlEl = document.documentElement;
+      const chatScroll = document.getElementById('chatScroll');
+      const welcomeState = document.getElementById('welcomeState');
+      const messagesList = document.getElementById('messagesList');
+      const chatForm = document.getElementById('chatForm');
+      const questionInput = document.getElementById('questionInput');
+      const sendBtn = document.getElementById('sendBtn');
+      const modeBadgeText = document.getElementById('modeBadgeText');
+      const statusFooter = document.getElementById('statusFooter');
+      const toastEl = document.getElementById('toast');
+
+      const settingsModal = document.getElementById('settingsModal');
+      const settingsBtn = document.getElementById('settingsBtn');
+      const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+      const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+      const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+      const installModal = document.getElementById('installModal');
+      const installBtn = document.getElementById('installBtn');
+      const closeInstallBtn = document.getElementById('closeInstallBtn');
+      const triggerPwaBtn = document.getElementById('triggerPwaBtn');
+      const downloadAppBtn = document.getElementById('downloadAppBtn');
+      const newChatBtn = document.getElementById('newChatBtn');
+      const themeBtn = document.getElementById('themeBtn');
+
+      function showToast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.remove('opacity-0');
+        toastEl.classList.add('opacity-100');
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => {
+          toastEl.classList.remove('opacity-100');
+          toastEl.classList.add('opacity-0');
+        }, 2300);
+      }
+
+      function applyTheme(theme) {
+        if (theme === 'dark') {
+          htmlEl.classList.add('dark');
+        } else {
+          htmlEl.classList.remove('dark');
+        }
+      }
+
+      function updateModeUI() {
+        modeBadgeText.textContent = 'سؤال وجواب';
+        statusFooter.textContent = 'يعمل مباشرة بدون مفاتيح — وضع سؤال وجواب فقط';
+      }
+
+      function escapeHtml(str) {
+        return str
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+      }
+
+      function formatMessageText(text) {
+        let html = escapeHtml(text);
+        html = html.replace(/```([\s\S]*?)```/g, (_, code) => `<pre><code>${code.trim()}</code></pre>`);
+        html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+        html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+        const lines = html.split('\n');
+        let out = [];
+        let inList = false;
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (/^[-*•]\s+/.test(trimmed)) {
+            if (!inList) {
+              out.push('<ul>');
+              inList = true;
+            }
+            out.push('<li>' + trimmed.replace(/^[-*•]\s+/, '') + '</li>');
+          } else {
+            if (inList) {
+              out.push('</ul>');
+              inList = false;
+            }
+            if (trimmed) {
+              out.push(`<p>${line}</p>`);
+            }
+          }
+        }
+        if (inList) out.push('</ul>');
+        return out.join('') || `<p>${html}</p>`;
+      }
+
+      function copyText(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(() => showToast('تم نسخ الإجابة')).catch(() => fallbackCopy(text));
+        } else {
+          fallbackCopy(text);
+        }
+      }
+
+      function fallbackCopy(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          showToast('تم نسخ الإجابة');
+        } catch (e) {
+          showToast('تعذر النسخ');
+        }
+        document.body.removeChild(ta);
+      }
+
+      function renderMessages() {
+        messagesList.innerHTML = '';
+        if (messages.length === 0) {
+          welcomeState.classList.remove('hidden');
+        } else {
+          welcomeState.classList.add('hidden');
+        }
+
+        messages.forEach((msg) => {
+          const isUser = msg.role === 'user';
+          const wrapper = document.createElement('div');
+          wrapper.className = `flex ${isUser ? 'justify-start' : 'justify-end'} w-full`;
+
+          if (isUser) {
+            wrapper.innerHTML = `
+              <div class="max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-tr-sm px-4 py-2.5 bg-emerald-600 text-white shadow-sm text-sm sm:text-base leading-relaxed">
+                ${escapeHtml(msg.text).replace(/\n/g, '<br>')}
+              </div>
+            `;
+          } else {
+            const card = document.createElement('div');
+            card.className = 'max-w-[92%] sm:max-w-[82%] rounded-2xl rounded-tl-sm px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm text-sm sm:text-base leading-relaxed space-y-2';
+
+            const header = document.createElement('div');
+            header.className = 'flex items-center justify-between gap-3 text-xs text-slate-400';
+            header.innerHTML = `<span class="font-bold text-emerald-600 dark:text-emerald-400">MohamadAi</span>`;
+
+            const copyBtn = document.createElement('button');
+            copyBtn.type = 'button';
+            copyBtn.className = 'hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer';
+            copyBtn.textContent = 'نسخ';
+            copyBtn.addEventListener('click', () => copyText(msg.text));
+            header.appendChild(copyBtn);
+
+            const body = document.createElement('div');
+            body.className = 'prose-msg text-slate-800 dark:text-slate-100';
+            body.innerHTML = formatMessageText(msg.text);
+
+            card.appendChild(header);
+            card.appendChild(body);
+            wrapper.appendChild(card);
+          }
+
+          messagesList.appendChild(wrapper);
+        });
+
+        chatScroll.scrollTop = chatScroll.scrollHeight;
+      }
+
+      function appendTypingIndicator() {
+        const el = document.createElement('div');
+        el.id = 'typingIndicator';
+        el.className = 'flex justify-end w-full';
+        el.innerHTML = `
+          <div class="rounded-2xl rounded-tl-sm px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 dot-1"></span>
+            <span class="w-2 h-2 rounded-full bg-emerald-500 dot-2"></span>
+            <span class="w-2 h-2 rounded-full bg-emerald-500 dot-3"></span>
+          </div>
+        `;
+        messagesList.appendChild(el);
+        chatScroll.scrollTop = chatScroll.scrollHeight;
+      }
+
+      function removeTypingIndicator() {
+        const el = document.getElementById('typingIndicator');
+        if (el) el.remove();
+      }
+
+      function tryMathAnswer(q) {
+        const pctMatch = q.match(/(\d+(?:\.\d+)?)\s*[%٪]\s*(?:من|of)\s*(\d+(?:\.\d+)?)/i);
+        if (pctMatch) {
+          const pct = parseFloat(pctMatch[1]);
+          const total = parseFloat(pctMatch[2]);
+          const res = (pct / 100) * total;
+          return `**النتيجة:** ${res.toLocaleString('en-US')}\n\n**طريقة الحساب:**\n- (${pct} ÷ 100) × ${total} = **${res}**`;
+        }
+        const exprMatch = q.match(/(?:احسب|كم يساوي|ناتج|calculate)?\s*([\d\s+\-*/().]+)\s*[؟?]?$/i);
+        if (exprMatch && /[+\-*/]/.test(exprMatch[1]) && /^[\d\s+\-*/().]+$/.test(exprMatch[1].trim())) {
+          try {
+            const clean = exprMatch[1].trim();
+            const val = Function(`"use strict"; return (${clean})`)();
+            if (typeof val === 'number' && isFinite(val)) {
+              return `ناتج العملية \`${clean}\` هو: **${val}**`;
+            }
+          } catch (e) {}
+        }
+        return null;
+      }
+
+      function builtinQA(question) {
+        const q = question.trim();
+        const lower = q.toLowerCase();
+
+        const mathAns = tryMathAnswer(q);
+        if (mathAns) return mathAns;
+
+        if (/^(نفذ|افعل|ارسل|أرسل|احجز|شغل|شغّل|افتح|عدّل|احذف|برمج لي ملف|send|book|execute|delete)\b/i.test(q)) {
+          return 'أنا **MohamadAi**، ومصمم للإجابة عن الأسئلة فقط (سؤال وجواب) دون تنفيذ أي مهام أو إجراءات. يمكنك سؤالي عن أي معلومة أو شرح وسأجيبك فوراً!';
+        }
+
+        if (/^(مرحبا|اهلا|أهلا|السلام عليكم|هلا|hi|hello|hey)/i.test(q)) {
+          return 'أهلاً بك! أنا **MohamadAi**، جاهز للإجابة عن أي سؤال في العلوم، البرمجة، الحساب، اللغة، أو المعرفة العامة. تفضل بطرح سؤالك!';
+        }
+
+        if (/(من انت|من أنت|ما اسمك|ما هو mohamadai|who are you)/i.test(lower)) {
+          return 'أنا **MohamadAi**، تطبيق ذكاء اصطناعي مخصص للأسئلة والأجوبة فقط. يمكنك سؤالي عن أي موضوع وسأعطيك إجابة واضحة ومباشرة.';
+        }
+
+        if (/(الذكاء الاصطناعي|artificial intelligence|\bai\b)/i.test(lower)) {
+          return '**الذكاء الاصطناعي (AI)** هو فرع من علوم الحاسوب يهدف إلى بناء أنظمة قادرة على محاكاة القدرات البشرية مثل الفهم، التحليل، التعلم، وحل المشكلات.\n\n- **كيف يعمل؟** يعتمد غالباً على **التعلم الآلي (Machine Learning)** والشبكات العصبية العميقة لتحليل كميات ضخمة من البيانات واكتشاف الأنماط والتنبؤ بالإجابات.\n- **أبرز استخداماته:** المحادثة الذكية، الترجمة، تحليل الصور الطبية، والبرمجة.';
+        }
+
+        if (/(بايثون|python|جافاسكريبت|javascript|\bjs\b)/i.test(lower)) {
+          return '**الفرق الأساسي بين Python و JavaScript:**\n\n- **Python (بايثون):** لغة سهلة القراءة ومشهورة جداً في الذكاء الاصطناعي، تحليل البيانات، والأتمتة وتطوير الخوادم.\n- **JavaScript (جافاسكريبت):** اللغة الأساسية لتطوير واجهات الويب التفاعلية في المتصفح، وتعمل أيضاً على الخوادم عبر Node.js.\n- **أيهما تختار؟** إذا كان هدفك الذكاء الاصطناعي أو البيانات فابدأ بـ Python، وإذا كان هدفك مواقع وتطبيقات الويب فابدأ بـ JavaScript.';
+        }
+
+        if (/(تركيز|الدراسة|مذاكرة|focus|study)/i.test(lower)) {
+          return '**5 نصائح سريعة لتحسين التركيز أثناء الدراسة:**\n\n- استخدم تقنية **بومودورو** (25 دقيقة دراسة مركزة + 5 دقائق راحة).\n- أبعد الهاتف أو فعّل وضع عدم الإزعاج أثناء الجلسة.\n- حدد هدفاً واحداً صغيراً لكل جلسة بدلاً من المهام الكبيرة الغامضة.\n- اشرب الماء الكافي وحافظ على إضاءة وتهوية جيدة.\n- اختبر نفسك بالأسئلة بدلاً من مجرد إعادة القراءة.';
+        }
+
+        if (/(الساعة|الوقت|التاريخ|اليوم|time|date|today)/i.test(lower)) {
+          const now = new Date();
+          return `الوقت الحالي حسب جهازك هو **${now.toLocaleTimeString('ar-EG')}**، والتاريخ هو **${now.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}**.`;
+        }
+
+        return `شكراً على سؤالك حول **"${q}"**!\n\nأنا **MohamadAi** (تطوير المهندس محمد سليم القاق)، وأعمل محلياً دون الحاجة إلى أي مفاتيح. يمكنك سؤالي عن:\n- العمليات الحسابية والنسب المئوية (مثال: 25% من 4800 أو 15*24).\n- مفاهيم الذكاء الاصطناعي والبرمجة (Python و JavaScript).\n- الوقت والتاريخ الحاليين أو نصائح الدراسة والتركيز.`;
+      }
+
+      async function handleAsk(question) {
+        const text = question.trim();
+        if (!text || isGenerating) return;
+
+        isGenerating = true;
+        sendBtn.disabled = true;
+        questionInput.value = '';
+        questionInput.style.height = 'auto';
+
+        messages.push({ role: 'user', text });
+        safeSet(STORAGE_KEY_MSGS, messages);
+        renderMessages();
+        appendTypingIndicator();
+
+        try {
+          await new Promise((r) => setTimeout(r, 250));
+          const reply = builtinQA(text);
+          removeTypingIndicator();
+          messages.push({ role: 'assistant', text: reply });
+          safeSet(STORAGE_KEY_MSGS, messages);
+          renderMessages();
+        } finally {
+          isGenerating = false;
+          sendBtn.disabled = false;
+          questionInput.focus();
+        }
+      }
+
+      chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        handleAsk(questionInput.value);
+      });
+
+      questionInput.addEventListener('input', () => {
+        questionInput.style.height = 'auto';
+        questionInput.style.height = Math.min(questionInput.scrollHeight, 144) + 'px';
+      });
+
+      questionInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          handleAsk(questionInput.value);
+        }
+      });
+
+      document.querySelectorAll('.starter-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          handleAsk(btn.getAttribute('data-prompt') || '');
+        });
+      });
+
+      newChatBtn.addEventListener('click', () => {
+        messages = [];
+        safeSet(STORAGE_KEY_MSGS, messages);
+        renderMessages();
+        showToast('بدأت محادثة جديدة');
+      });
+
+      themeBtn.addEventListener('click', () => {
+        config.theme = config.theme === 'dark' ? 'light' : 'dark';
+        applyTheme(config.theme);
+        safeSet(STORAGE_KEY_CFG, config);
+      });
+
+      settingsBtn.addEventListener('click', () => {
+        settingsModal.classList.remove('hidden');
+        settingsModal.classList.add('flex');
+      });
+
+      closeSettingsBtn.addEventListener('click', () => {
+        settingsModal.classList.add('hidden');
+        settingsModal.classList.remove('flex');
+      });
+
+      saveSettingsBtn.addEventListener('click', () => {
+        settingsModal.classList.add('hidden');
+        settingsModal.classList.remove('flex');
+      });
+
+      clearHistoryBtn.addEventListener('click', () => {
+        messages = [];
+        safeSet(STORAGE_KEY_MSGS, messages);
+        renderMessages();
+        settingsModal.classList.add('hidden');
+        settingsModal.classList.remove('flex');
+        showToast('تم مسح سجل المحادثة');
+      });
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        triggerPwaBtn.classList.remove('hidden');
+      });
+
+      installBtn.addEventListener('click', () => {
+        installModal.classList.remove('hidden');
+        installModal.classList.add('flex');
+      });
+
+      closeInstallBtn.addEventListener('click', () => {
+        installModal.classList.add('hidden');
+        installModal.classList.remove('flex');
+      });
+
+      triggerPwaBtn.addEventListener('click', async () => {
+        if (!deferredInstallPrompt) return;
+        deferredInstallPrompt.prompt();
+        await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        triggerPwaBtn.classList.add('hidden');
+        installModal.classList.add('hidden');
+        installModal.classList.remove('flex');
+      });
+
+      downloadAppBtn.addEventListener('click', () => {
+        const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'MohamadAi.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('تم تنزيل MohamadAi.html');
+      });
+
+      applyTheme(config.theme || 'dark');
+      updateModeUI();
+      renderMessages();
+    })();
+  </script>
+</body>
+</html>
